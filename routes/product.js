@@ -86,20 +86,24 @@ export const createProduct = async (req, res) => {
 
 //Add to cart
 export const addToCart = async (req, res) => {
-  const { userId, productId } = req.body;
+
+  const { userId, product_id } = req.body;
 
   try {
     let cart = await Cart.findOne({ userId });
-    let product = await Product.findOne({ product_id: productId });
-    
-    cart.product.push(productId);
+    if(!cart) {
+      cart = await Cart.create({ userId, total_amount: 0 });
+    }
+    let product = await Product.findOne({ product_id });
+    cart.product.push(product);
     cart.quantity += 1;
     cart.total_amount = cart.total_amount + product.price;
     
-    const response = await cart.findOneAndUpdate(userId, cart);
-    console.log(response);
+    const response = await Cart.findOneAndUpdate({userId}, cart, {
+      new: true
+    });
 
-    res.status(201).json({ message: "Product added to cart", user, cart });
+    res.status(201).json({ message: "Product added to cart", cart });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
