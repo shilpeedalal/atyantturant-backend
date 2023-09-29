@@ -3,6 +3,11 @@ import { Product } from "../model/product.js";
 import { User } from "../model/user.js";
 import { Wishlist } from "../model/wishlist.js";
 import { Cart } from "../model/cart.js";
+import Stripe from "stripe";
+
+const { STRIPE_PUBLISHABLE_KEY, STRIPE_SECRET_KEY } = process.env;
+const stripe = new Stripe(STRIPE_SECRET_KEY);
+
 
 //get all Products
 export const getProducts = async (req, res) => {
@@ -127,7 +132,7 @@ export const getCartDetails = async (req, res) => {
   }
 }
 
-// remove from cart
+// remove product from cart
 export const removeItemFromCart = async (req, res) => {
   const { product_id, userId } = req.body;
 
@@ -153,4 +158,70 @@ export const removeItemFromCart = async (req, res) => {
   });
   
   res.status(200).json({ message: "Product removed from cart", cart });
+}
+
+// payment
+
+export const renderBuyPage = async(req,res)=>{
+
+  try {
+      const resp = await Cart.findOne({ userId: 1 });
+      const amount = resp.total_amount;
+
+      res.render('buy', {
+          key: STRIPE_PUBLISHABLE_KEY,
+          amount
+       })
+
+  } catch (error) {
+      console.log(error.message);
+  }
+
+}
+
+export const success = async(req,res)=>{
+
+  try {
+      
+      res.render('success');
+
+  } catch (error) {
+      console.log(error.message);
+  }
+
+}
+
+export const failure = async(req,res)=>{
+
+  try {
+      
+      res.render('failure');
+
+  } catch (error) {
+      console.log(error.message);
+  }
+
+}
+
+export const payment = async(req,res)=>{
+
+try {
+
+  const session = await stripe.checkout.sessions.create({
+    line_items: [
+      {
+        price: 'price_1NvldnSGQ0ucF0bOEk9K7JGD',
+        quantity: 1,
+      },
+    ],
+    mode: 'payment',
+    success_url: `https://atyant.onrender.com/success`,
+    cancel_url: `https://atyant.onrender.com/failure`,
+  });
+
+  res.redirect(303, session.url);
+
+} catch (error) {
+    console.log(error.message);
+}
 }
