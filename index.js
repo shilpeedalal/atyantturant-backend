@@ -4,7 +4,7 @@ import bodyparser from "body-parser"
 import cors from "cors"
 import path from "path"
 import stripePackage from 'stripe';
-import { createWishlist, getProduct, getProducts, createProduct, getAllWatchlist, getCartDetails, addToCart} from "./routes/product.js";
+import { createWishlist, getProduct, getProducts, createProduct, getAllWatchlist, getCartDetails, addToCart, removeItemFromCart} from "./routes/product.js";
 
 const app = express();
 app.use(cors());
@@ -25,14 +25,18 @@ app.post('/createProduct', createProduct)
 app.get('/getAllWatchlist/:id', getAllWatchlist)
 app.get('/getCartDetails/:id', getCartDetails)
 app.post('/addToCart', addToCart);
+app.post('/removeItemFromCart', removeItemFromCart);
+
 // //payment
 // const Publishable_Key = process.env.Publishable_Key
 // const Secret_Key = process.env.Secret_Key
 
-// // const stripe = require('stripe')(Secret_Key)
+// const stripe = stripePackage('Secret_Key')
 
 // // View Engine Setup
-// app.set('views', path.join(__dirname, 'views'))
+// // app.set('views', path.join(__dirname, 'views'))
+// const viewsPath = path.join(import.meta.url, 'views').replace('file://', '')
+// app.set('views', viewsPath);
 // app.set('view engine', 'ejs')
 
 // app.get('/', function(req, res){

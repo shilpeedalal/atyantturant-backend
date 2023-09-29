@@ -126,3 +126,31 @@ export const getCartDetails = async (req, res) => {
     res.status(500).json({ error: "Internal Server error" });
   }
 }
+
+// remove from cart
+export const removeItemFromCart = async (req, res) => {
+  const { product_id, userId } = req.body;
+
+  const cart = await Cart.findOne({ userId });
+  console.log("Cart :", cart);
+
+  const indexToRemove = cart.product.findIndex(
+    (item) => item.product_id === product_id
+  );
+
+  let removedProduct = cart.product[indexToRemove];
+
+  if (indexToRemove !== -1) {
+    cart.product.splice(indexToRemove, 1);
+    cart.quantity -= 1;
+    cart.total_amount -= removedProduct.price;
+  } else {
+    res.status(404).json({ message: "No object found with the given product_id" });
+  }
+
+  await Cart.findOneAndUpdate({ userId }, cart, {
+    new: true,
+  });
+  
+  res.status(200).json({ message: "Product removed from cart", cart });
+}
